@@ -1,4 +1,4 @@
-from functools import reduce
+from math import prod
 
 def part1(data):
 	data = preprocess(data)
@@ -14,18 +14,39 @@ def part1(data):
 	for i, line in enumerate(lines):
 		if line:
 			gen = (int(s) for s in line)
-			if ops[i] == '*':
-				t = reduce(lambda x, y: x * y, gen)
-				total += t
-			elif ops[i] == '+':
-				t = sum(gen)
-				total += t
+			total += sum(gen) if ops[i] == '+' else prod(gen)
 
 	return total	
 
-def part2(data):
-	...
+def part2(data: str):
+    lines = data.strip().split('\n')
 
+    number_rows = lines[:-1]
+    op_row = lines[-1]
+
+    operations = [ch for ch in op_row if ch in '+*']
+
+    total = 0
+    current_numbers = []
+
+    # walk columns from right to left
+	# extra -1 step to force a final flush at i == -1
+    for i in range(len(number_rows[0]) - 1, -2, -1):
+        if i == -1 or all(row[i] == ' ' for row in number_rows):
+            if current_numbers:
+                op = operations.pop()
+                if op == '+':
+                    total += sum(current_numbers)
+                elif op == '*':
+                    total += prod(current_numbers)
+                current_numbers = []
+        else:
+            column_chars = ''.join(row[i] for row in number_rows)
+            num_str = column_chars.strip()
+            if num_str:
+                current_numbers.append(int(num_str))
+
+    return total
 
 
 def preprocess(data: str):
@@ -47,6 +68,8 @@ tc = '''
 def test_part1():
 	assert part1(tc) == 4277556
 
+def test_part2():
+	assert part2(tc) == 3263827
 
 if __name__ == "__main__":
 	with open("input.txt") as f:
